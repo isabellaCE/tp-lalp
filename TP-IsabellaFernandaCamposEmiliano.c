@@ -11,45 +11,63 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-typedef struct atomo{
+typedef struct ATOMO{
   int num;
   char nome[4];
   char aminoacido[4];
   float x;
   float y;
   float z;
-} Atomo;
+} ATOMO;
 
-typedef struct item{
-    Atomo atomo;                 
-    struct item *prox;                        
-} Item;
+typedef struct CELULA {
+    ATOMO item;
+    struct CELULA *prox;
+} CELULA;
 
-typedef struct {
-    Item *primeiro;
-    Item *ultimo;
-    int quant;
-} Header;
+typedef struct LISTA {
+    CELULA *primeiro;
+    CELULA *ultimo;
+} LISTA;
 
-int numero_atom(FILE* arq){
-    char ch;
-    int cont;
+void inicializa(LISTA *l);
+void imprime(LISTA *l);
+void insere(ATOMO x, LISTA *l);
 
-    while( (ch=fgetc(arq))!= EOF ){
-			if(ch == 'A'){
-                if(ch+1 == 'T'){
-                    if(ch+2 == 'O'){
-                        if(ch+3 == 'M'){
-			            atomo.num++;
-                        }
-                    }
-                }
-            }    
-    }
+void printAtomo(ATOMO atomo){
+    printf("{\nNumero: %d\nNome: %s\nAminoacido: %s\n",atomo.num,atomo.nome,atomo.aminoacido);
+    printf("x: %f\ny: %f\nz: %f\n}\n",atomo.x,atomo.y,atomo.z);
 }
 
-void menu (){
+
+int numero_atom(FILE* arq,LISTA* lista){
+    char ch,charAux;
+    char stringAux[90];
+    int cont=0, intAux, result;
+    ATOMO atomo;
+
+    do{
+        fgets(stringAux,5,arq);
+        if(strcmp(stringAux,"ATOM")==0){
+            result = fscanf(arq," %6d  %3s %3s %c %3d   %f %f %f %[^\n]s",&atomo.num,&atomo.nome,&atomo.aminoacido,&charAux,&intAux,&atomo.x,&atomo.y,&atomo.z,&stringAux);
+            ch = getc(arq);
+            printAtomo(atomo);
+            cont++;
+        } else{
+            fseek(arq,77,SEEK_CUR);
+        }
+        //printf("[%d](%d)[%c][%s]\n",result,ftell(arq),fgetc(arq),stringAux);
+
+    }while(result!=EOF);
+    system("pause");
+    insere(atomo,lista);
+    imprime(lista);
+
+}
+
+void menu (LISTA *lista){
     int c = 60 , escolha;
     printf("LEITOR DE ATOMOS\n");
     while(c--){printf("-");}
@@ -84,42 +102,69 @@ void menu (){
 
         break;
         case 7 :
-        
+
         break;
     }
 }
 
 int main(int argc, char* argv[]){
-
-    Header cabeca;
-    cabeca->primeiro = NULL;
-    cabeca->ultimo = cabeca->primeiro;
+    LISTA lista;
+    ATOMO test;
+    inicializa(&lista);
+    test.num=5;
+    insere(test,&lista);
+    test.num=7;
+    insere(test,&lista);
+    imprime(&lista);
 
     int i;
     char aux;
     FILE *arq;
 
-    arq = fopen(argv[1], "r");
+    arq = fopen("1pen.pdb", "r");
 
-
+/*
     for(i=0;i<argc;i++)
         printf("[%d] = %s\n",i,argv[i]);
-
+*/
     if(arq == NULL){
         printf("Erro!!");
         fclose(arq);
         return 0;
-    } 
-    
+    }
+
+    numero_atom(arq,&lista);
+
     //liberado
-    menu();
-    
+    menu(&lista);
+
     fclose(arq);
     return 0;
 }
 
-/*
-comentarios aq.
-OK
-*/
+void inicializa(LISTA *l){
+    l->primeiro = (CELULA*)malloc(sizeof(CELULA));
+    l->ultimo = l->primeiro;
+    l->ultimo->prox == NULL;
+}
+
+void imprime(LISTA *l){
+    int i = 0;
+    CELULA *aux = l->primeiro->prox;
+
+    system("cls");
+    while(aux != NULL){
+        printf("ITEM %d DA LISTA: \t", i+1);
+        printf("%d \n", aux->item.num);
+        aux = aux->prox;
+        i++;
+    }
+}
+
+void insere(ATOMO x, LISTA *l){
+    l->ultimo->prox = (CELULA*)malloc(sizeof(CELULA)*1);
+    l->ultimo = l->ultimo->prox;
+    l->ultimo->item = x;
+    l->ultimo->prox = NULL;
+}
 
