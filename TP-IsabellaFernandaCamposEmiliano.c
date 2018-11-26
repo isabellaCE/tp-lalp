@@ -30,6 +30,7 @@ typedef struct CELULA {
 typedef struct LISTA {
     CELULA *primeiro;
     CELULA *ultimo;
+    int quant;
 } LISTA;
 
 void inicializa(LISTA *l);
@@ -37,37 +38,34 @@ void imprime(LISTA *l);
 void insere(ATOMO x, LISTA *l);
 
 void printAtomo(ATOMO atomo){
-    printf("{\nNumero: %d\nNome: %s\nAminoacido: %s\n",atomo.num,atomo.nome,atomo.aminoacido);
-    printf("x: %f\ny: %f\nz: %f\n}\n",atomo.x,atomo.y,atomo.z);
+    printf("\tNumero: %d\n\tNome: %s\n\tAminoacido: %s\n",atomo.num,atomo.nome,atomo.aminoacido);
+    printf("\tx: %f\n\ty: %f\n\tz: %f\n",atomo.x,atomo.y,atomo.z);
 }
 
 
 int numero_atom(FILE* arq,LISTA* lista){
     char ch,charAux;
-    char stringAux[90];
+    char line[81],stringAux[90];
     int cont=0, intAux, result;
     ATOMO atomo;
 
     do{
         fgets(stringAux,5,arq);
+        fscanf(arq,"%[^\n]s",line);
+
+        ch = getc(arq);
         if(strcmp(stringAux,"ATOM")==0){
-            result = fscanf(arq," %6d  %3s %3s %c %3d   %f %f %f %[^\n]s",&atomo.num,&atomo.nome,&atomo.aminoacido,&charAux,&intAux,&atomo.x,&atomo.y,&atomo.z,&stringAux);
-            ch = getc(arq);
-            printAtomo(atomo);
+            result = sscanf(line," %6d  %3s %3s %c %3d   %f %f %f %[^\n]s",&atomo.num,&atomo.nome,&atomo.aminoacido,&charAux,&intAux,&atomo.x,&atomo.y,&atomo.z,&stringAux);
+            insere(atomo,lista);
             cont++;
-        } else{
-            fseek(arq,77,SEEK_CUR);
         }
-        //printf("[%d](%d)[%c][%s]\n",result,ftell(arq),fgetc(arq),stringAux);
-
-    }while(result!=EOF);
-    system("pause");
-    insere(atomo,lista);
-    imprime(lista);
-
+        else if(strcmp(stringAux,"END ")==0){
+            break;
+        }
+    }while(!feof(arq));
 }
 
-void menu (LISTA *lista){
+int menu (LISTA *lista){
     int c = 60 , escolha;
     printf("LEITOR DE ATOMOS\n");
     while(c--){printf("-");}
@@ -80,42 +78,49 @@ void menu (LISTA *lista){
     printf("5. Exibir na tela a quantidade total de aminoacidos presentes no arquivo \n");
     printf("6. Listar os dados de um atomo especifico\n");
     printf("7. Listar os dados de todos os atomos que tenham o mesmo tipo informado pelo usuario\n");
-    while(c--){printf("-");}
-        scanf("%d",&escolha);
+    printf("8. Sair\n");
+    while(c--){putc('-',stdout);}
+
+    printf("\nSelecione: ");
+    scanf("%d",&escolha);
+
     switch(escolha){
         case 1 :
             //inserir funcao a se executar
-        break;
+            imprime(lista);
+            break;
         case 2 :
 
-        break;
+            break;
         case 3 :
 
-        break;
+            break;
         case 4 :
 
-        break;
+            break;
         case 5 :
 
-        break;
+            break;
         case 6 :
+            printf("Digite o numero do atomo: ");
+            scanf("%d",&c);
 
-        break;
+            imprimirEspecifico(lista,c);
+            break;
         case 7 :
 
-        break;
+            break;
+        case 8:
+            printf("\nSaindo...\n");
+            break;
     }
+
+    return escolha;printf("\nSaindo...\n");
 }
 
 int main(int argc, char* argv[]){
     LISTA lista;
-    ATOMO test;
     inicializa(&lista);
-    test.num=5;
-    insere(test,&lista);
-    test.num=7;
-    insere(test,&lista);
-    imprime(&lista);
 
     int i;
     char aux;
@@ -135,8 +140,10 @@ int main(int argc, char* argv[]){
 
     numero_atom(arq,&lista);
 
+    printf("Numero de atomos: %d\n\n",lista.quant);
+
     //liberado
-    menu(&lista);
+    while(menu(&lista)!=8){}
 
     fclose(arq);
     return 0;
@@ -146,18 +153,35 @@ void inicializa(LISTA *l){
     l->primeiro = (CELULA*)malloc(sizeof(CELULA));
     l->ultimo = l->primeiro;
     l->ultimo->prox == NULL;
+    l->quant = 0;
 }
 
 void imprime(LISTA *l){
     int i = 0;
     CELULA *aux = l->primeiro->prox;
 
-    system("cls");
+    //system("cls");
     while(aux != NULL){
-        printf("ITEM %d DA LISTA: \t", i+1);
-        printf("%d \n", aux->item.num);
+        printf("Atomo %d:\n",i+1);
+        printAtomo(aux->item);
+        putc('\n',stdout);
         aux = aux->prox;
         i++;
+    }
+}
+
+void imprimirEspecifico(LISTA *l,int num){
+    int i = 0;
+    CELULA *aux = l->primeiro->prox;
+
+    while(aux != NULL && aux->item.num!=num){
+        aux = aux->prox;
+    }
+
+    if(aux == NULL){
+        printf("Atomo com o numero %d nao existe!\n",num);
+    } else {
+        printAtomo(aux->item);
     }
 }
 
@@ -166,5 +190,6 @@ void insere(ATOMO x, LISTA *l){
     l->ultimo = l->ultimo->prox;
     l->ultimo->item = x;
     l->ultimo->prox = NULL;
+    l->quant++;
 }
 
