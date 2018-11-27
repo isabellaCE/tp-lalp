@@ -1,12 +1,12 @@
 /*Nome: Isabella Fernanda Campos Emiliano
  *Matricula: 201711130257
  *Nome: Juan Vitor Saar Silvério
- *Matricula: c
+ *Matricula: 201711130109
  *Nome: Marcus Vinicius Arcanjo Braga
  *Matricula: 201811130160
  *Nome: Samuel Pedro Fernandes Amorim
  *Matricula:201811130240
- *Descricao: 
+ *Descricao: Um programa que
  */
 
 #include <stdio.h>
@@ -18,7 +18,7 @@ typedef struct ATOMO
     int num;
     char nome[4];
     char aminoacido[4];
-    int tpAminoacido;
+    char tpAminoacido[4];
     float x;
     float y;
     float z;
@@ -55,14 +55,14 @@ void listar_dados(LISTA *l, char tipo[]);
 void printAtomo(ATOMO atomo)
 {
     printf("\tNumero: %d\n\tNome: %s\n\tAminoacido: %s\n", atomo.num, atomo.nome, atomo.aminoacido);
-    printf("\tx: %f\n\ty: %f\n\tz: %f\n", atomo.x, atomo.y, atomo.z);
+    printf("\tx: %.3f\n\ty: %.3f\n\tz: %.3f\n", atomo.x, atomo.y, atomo.z);
 }
 
 int numero_atom(FILE *arq, LISTA *lista)
 {
     char ch, charAux;
     char line[81], stringAux[90];
-    int cont = 0, intAux, result;
+    int intAux, result;
     ATOMO atomo;
 
     do
@@ -73,9 +73,8 @@ int numero_atom(FILE *arq, LISTA *lista)
         ch = getc(arq);
         if (strcmp(stringAux, "ATOM") == 0)
         {
-            result = sscanf(line, " %6d  %3s %3s %c %3d   %f %f %f %[^\n]s", &atomo.num, &atomo.nome, &atomo.aminoacido, &charAux, &atomo.tpAminoacido, &atomo.x, &atomo.y, &atomo.z, &stringAux);
+            result = sscanf(line, " %6d  %3s %3s %c %3s   %f %f %f %[^\n]s", &atomo.num, &atomo.nome, &atomo.aminoacido, &charAux, &atomo.tpAminoacido, &atomo.x, &atomo.y, &atomo.z, &stringAux);
             insere(atomo, lista);
-            cont++;
         }
         else if (strcmp(stringAux, "END ") == 0)
         {
@@ -84,8 +83,7 @@ int numero_atom(FILE *arq, LISTA *lista)
     } while (!feof(arq));
 }
 
-void gerar_saida(LISTA *l, char saidaFile[])
-{
+void gerar_saida(LISTA *l, char saidaFile[]){
     FILE *saida = fopen(saidaFile, "w");
 
     tipos_atomo(l, saida);
@@ -97,14 +95,12 @@ void gerar_saida(LISTA *l, char saidaFile[])
     printf("Arquivo de saida gerado com sucesso!\n");
 }
 
-int menu(LISTA *lista, char saida[])
-{
+int menu(LISTA *lista, char saida[]){
     char ch[4];
     int c = 60, escolha;
     printf("LEITOR DE ATOMOS\n");
-    while (c--)
-    {
-        printf("-");
+    while (c--){
+            printf("-");
     }
     c = 60;
     printf("\n");
@@ -124,8 +120,7 @@ int menu(LISTA *lista, char saida[])
     printf("\nSelecione: ");
     scanf("%d", &escolha);
 
-    switch (escolha)
-    {
+    switch (escolha){
     case 1:
         //inserir funcao a se executar
         imprime(lista);
@@ -159,42 +154,33 @@ int menu(LISTA *lista, char saida[])
     }
 
     return escolha;
-    printf("\nSaindo...\n");
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
     LISTA lista;
     inicializa(&lista);
 
-    ITEM *lAtomos;
-    ITEM *lAmino;
-
-    int i;
-    char aux;
     FILE *arq;
-
-    arq = fopen(argv[1], "r");
+    arq = fopen(argv[1], "r"); // 1PEN.PDB
 
     /*
     for(i=0;i<argc;i++)
         printf("[%d] = %s\n",i,argv[i]);
 */
-    if (arq == NULL)
-    {
+    if (arq == NULL){
         printf("Erro!!");
         fclose(arq);
         return 0;
     }
 
     numero_atom(arq, &lista);
+    fclose(arq);
 
     printf("Numero de atomos: %d\n\n", lista.quant);
 
     //liberado
     while (menu(&lista,argv[2]) != 8){}
 
-    fclose(arq);
     return 0;
 }
 
@@ -227,7 +213,7 @@ void quantAminoacido(LISTA *l, FILE *out)
         //aqui vem o código
         for (i = 0; i < count; i++)
         {
-            if (strcmp(tipos[i].nome, aux->item.nome) == 0)
+            if (strcmp(tipos[i].nome, aux->item.tpAminoacido) == 0)
             {
                 tipos[i].quant++;
                 existe = 1;
@@ -238,14 +224,14 @@ void quantAminoacido(LISTA *l, FILE *out)
         {
             count++;
             tipos = (ITEM *)realloc(tipos, sizeof(ITEM) * count);
-            strcpy(tipos[count - 1].nome, aux->item.nome);
+            strcpy(tipos[count - 1].nome, aux->item.tpAminoacido);
             tipos[count - 1].quant = 1;
         }
 
         aux = aux->prox;
     }
 
-    fprintf(out, "Quantidade total de aminoácidos presentes no arquivo: %d\n", count);
+    fprintf(out, "Quantidade total de aminoacidos presentes no arquivo: %d\n", count);
 }
 
 void inicializa(LISTA *l)
@@ -276,11 +262,11 @@ void tipos_atomo(LISTA *l, FILE *out)
 {
     int i = 0, count = 0, existe = 0;
     CELULA *aux = l->primeiro->prox;
-    ITEM *tipos = (ITEM *)malloc(sizeof(ITEM));
+    ITEM *tipos = (ITEM *)malloc(sizeof(ITEM)); // {n: 2, c:1}
 
     while (aux != NULL)
     {
-        existe = 0;
+        existe = 0; //0
         //aqui vem o código
         for (i = 0; i < count; i++)
         {
@@ -303,8 +289,7 @@ void tipos_atomo(LISTA *l, FILE *out)
     }
 
     fprintf(out, "Atomos de cada tipo presentes no arquivo:\n");
-    for (i = 0; i < count; i++)
-    {
+    for (i = 0; i < count; i++){
         fprintf(out, "%s: %d\n", tipos[i].nome, tipos[i].quant);
     }
 }
@@ -334,7 +319,7 @@ void tipos_aminoacido(LISTA *l, FILE *out)
             tipos = (ITEM *)realloc(tipos, sizeof(ITEM) * count);
             strcpy(tipos[count - 1].nome, aux->item.aminoacido);
             tipos[count - 1].quant = 1;
-        }
+        }//quant;
 
         aux = aux->prox;
     }
@@ -351,17 +336,15 @@ void imprimirEspecifico(LISTA *l, int num)
     int i = 0;
     CELULA *aux = l->primeiro->prox;
 
-    while (aux != NULL && aux->item.num != num)
-    {
+    while (aux != NULL && aux->item.num != num){
         aux = aux->prox;
     }
+    //aux ==null ou aux = celula do atomo certo
 
-    if (aux == NULL)
-    {
+    if (aux == NULL){
         printf("Atomo com o numero %d nao existe!\n", num);
     }
-    else
-    {
+    else{
         printAtomo(aux->item);
     }
 }
