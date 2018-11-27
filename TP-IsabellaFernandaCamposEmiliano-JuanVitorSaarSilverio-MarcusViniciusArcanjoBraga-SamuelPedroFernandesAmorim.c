@@ -6,7 +6,8 @@
  *Matricula: 201811130160
  *Nome: Samuel Pedro Fernandes Amorim
  *Matricula:201811130240
- *Descricao: Um programa que
+ *Descricao: Um programa que recebe dois parametros, um sendo o arquivo
+ 	de leitura e outro o arquivo de saida (opção 2)
  */
 
 #include <stdio.h>
@@ -163,10 +164,7 @@ int main(int argc, char *argv[]){
     FILE *arq;
     arq = fopen(argv[1], "r"); // 1PEN.PDB
 
-    /*
-    for(i=0;i<argc;i++)
-        printf("[%d] = %s\n",i,argv[i]);
-*/
+
     if (arq == NULL){
         printf("Erro!!");
         fclose(arq);
